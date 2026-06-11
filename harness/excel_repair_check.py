@@ -57,10 +57,12 @@ def pin_manual_calc() -> bool:
         "set display alerts to false\n"
         f'open workbook workbook file name (POSIX file "{PIN_PATH}")\n'
         "set calculation to calculation manual\n"
+        # verify BEFORE closing: with no workbook open the calculation
+        # property does not report the session mode (though the mode itself
+        # persists behaviorally for subsequent opens)
+        'set pinOK to (calculation is calculation manual)\n'
         "close active workbook saving no\n"
-        # compare the enum directly: coercing it `as string` fails in some
-        # osascript contexts and would make a working pin look broken
-        'if calculation is calculation manual then return "PIN-OK"\n'
+        'if pinOK then return "PIN-OK"\n'
         'return "PIN-MISSING"\n'
         "end tell"
     )
