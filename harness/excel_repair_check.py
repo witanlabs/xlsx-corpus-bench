@@ -35,17 +35,62 @@ CHUNK = 10
 CHUNK_TIMEOUT_S = 420
 SINGLE_TIMEOUT_S = 90
 
+PIN_PATH = None  # set in main()
+
+
+def pin_manual_calc() -> None:
+    """Excel adopts its session calculation mode from the FIRST workbook
+    opened. Open-and-close a tiny calcMode="manual" workbook so every
+    subsequent open in this session skips recalculation (fullCalcOnLoad
+    fires during open, so setting the mode afterwards is too late)."""
+    import zipfile
+
+    parts = dict(excel_truth.MINIMAL_XLSX_PARTS)
+    parts["xl/workbook.xml"] = parts["xl/workbook.xml"].replace(
+        b"</workbook>", b'<calcPr calcMode="manual"/></workbook>'
+    )
+    with zipfile.ZipFile(PIN_PATH, "w") as z:
+        for name, data in parts.items():
+            z.writestr(name, data)
+    script = (
+        'tell application "Microsoft Excel"\n'
+        "set display alerts to false\n"
+        f'open workbook workbook file name (POSIX file "{PIN_PATH}")\n'
+        "set calculation to calculation manual\n"
+        "close active workbook saving no\n"
+        "end tell"
+    )
+    try:
+        subprocess.run(["osascript", "-e", script], capture_output=True, timeout=60)
+    except subprocess.TimeoutExpired:
+        pass
+
+
+def restart_excel_pinned() -> None:
+    excel_truth.restart_excel()
+    pin_manual_calc()
+
 
 def open_script(pairs) -> str:
     lines = [
         f"with timeout of {CHUNK_TIMEOUT_S - 30} seconds",
         'tell application "Microsoft Excel"',
         "set display alerts to false",
+        # manual calculation: we measure open-without-repair, not values, and
+        # openpyxl outputs set fullCalcOnLoad (its by-design behavior) which
+        # otherwise makes Excel recompute entire workbooks per open. Setting
+        # the property can fail with no workbook open — retry after each open.
+        "try",
+        "set calculation to calculation manual",
+        "end try",
     ]
     for sha, path in pairs:
         lines += [
             "try",
             f'open workbook workbook file name (POSIX file "{path}") update links do not update links',
+            "try",
+            "set calculation to calculation manual",
+            "end try",
             "close active workbook saving no",
             f'log "OPENED {sha}"',
             "on error m number n",
@@ -74,7 +119,7 @@ def run_pairs(pairs, timeout) -> dict[str, str]:
                 sha = line.split()[1]
                 out[sha] = "openfail: " + line.split(" ", 2)[2][:200]
     except subprocess.TimeoutExpired:
-        excel_truth.restart_excel()
+        restart_excel_pinned()
     return out
 
 
@@ -87,6 +132,8 @@ def main() -> int:
     results = os.path.join(ROOT, args.results_dir)
     out_dir = os.path.join(results, "rt-outputs", args.lib)
     excel_truth.CANARY_DIR = results  # save canary location for ensure_excel
+    global PIN_PATH
+    PIN_PATH = os.path.join(results, "calcpin.xlsx")
     repair_dir = os.path.join(results, "excel-repair")
     os.makedirs(repair_dir, exist_ok=True)
     out_path = os.path.join(repair_dir, f"{args.lib}.jsonl")
@@ -117,13 +164,13 @@ def main() -> int:
         todo.append((rec, path if os.path.exists(path) else None))
 
     print(f"{args.lib}: {len(todo)} outputs to check", file=sys.stderr)
-    excel_truth.restart_excel()
+    restart_excel_pinned()
 
     out = open(out_path, "a")
     n_done = 0
     for i in range(0, len(todo), CHUNK):
         if (i // CHUNK) % 50 == 49:
-            excel_truth.restart_excel()  # preventive, long sessions decay
+            restart_excel_pinned()  # preventive, long sessions decay
         chunk = todo[i : i + CHUNK]
         for rec, path in [(r, p) for r, p in chunk if p is None]:
             out.write(json.dumps({"sha256": rec["sha256"], "path": rec["path"], "result": "no-output"}) + "\n")
@@ -133,7 +180,7 @@ def main() -> int:
             results_map = run_pairs(pairs, CHUNK_TIMEOUT_S)
             # whole chunk silent => Excel wedged, restart and retry singles
             if not results_map:
-                excel_truth.restart_excel()
+                restart_excel_pinned()
             for sha, path in pairs:
                 verdict = results_map.get(sha)
                 if verdict is None:
@@ -141,7 +188,7 @@ def main() -> int:
                     single = run_pairs([(sha, path)], SINGLE_TIMEOUT_S)
                     verdict = single.get(sha, "openfail: hang/timeout (modal or crash)")
                     if sha not in single:
-                        excel_truth.restart_excel()
+                        restart_excel_pinned()
                 rec = next(r for r, p in chunk if r["sha256"] == sha)
                 out.write(json.dumps({"sha256": sha, "path": rec["path"], "result": verdict}) + "\n")
             out.flush()
