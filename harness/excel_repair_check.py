@@ -100,10 +100,16 @@ def main() -> int:
                 except Exception:
                     pass
 
+    truth_dir = os.path.join(results, "excel-truth")
     todo = []
     for line in open(os.path.join(results, "manifest.jsonl")):
         rec = json.loads(line)
         if rec["sha256"] in done:
+            continue
+        # universe rule: skip files Excel can't process in original form
+        if os.path.isdir(truth_dir) and not os.path.exists(
+            os.path.join(truth_dir, rec["sha256"] + ".xlsx")
+        ):
             continue
         path = os.path.join(out_dir, rec["sha256"] + rec["ext"])
         if not os.path.exists(path):
