@@ -58,12 +58,15 @@ def pin_manual_calc() -> bool:
         f'open workbook workbook file name (POSIX file "{PIN_PATH}")\n'
         "set calculation to calculation manual\n"
         "close active workbook saving no\n"
-        "return calculation as string\n"
+        # compare the enum directly: coercing it `as string` fails in some
+        # osascript contexts and would make a working pin look broken
+        'if calculation is calculation manual then return "PIN-OK"\n'
+        'return "PIN-MISSING"\n'
         "end tell"
     )
     try:
         p = subprocess.run(["osascript", "-e", script], capture_output=True, timeout=60)
-        return b"manual" in p.stdout
+        return b"PIN-OK" in p.stdout
     except subprocess.TimeoutExpired:
         return False
 
