@@ -38,7 +38,7 @@ SINGLE_TIMEOUT_S = 90
 PIN_PATH = None  # set in main()
 
 
-def pin_manual_calc() -> None:
+def pin_manual_calc() -> bool:
     """Excel adopts its session calculation mode from the FIRST workbook
     opened. Open-and-close a tiny calcMode="manual" workbook so every
     subsequent open in this session skips recalculation (fullCalcOnLoad
@@ -58,17 +58,24 @@ def pin_manual_calc() -> None:
         f'open workbook workbook file name (POSIX file "{PIN_PATH}")\n'
         "set calculation to calculation manual\n"
         "close active workbook saving no\n"
+        "return calculation as string\n"
         "end tell"
     )
     try:
-        subprocess.run(["osascript", "-e", script], capture_output=True, timeout=60)
+        p = subprocess.run(["osascript", "-e", script], capture_output=True, timeout=60)
+        return b"manual" in p.stdout
     except subprocess.TimeoutExpired:
-        pass
+        return False
 
 
 def restart_excel_pinned() -> None:
-    excel_truth.restart_excel()
-    pin_manual_calc()
+    """The pin MUST verifiably stick: an unpinned session recalculates
+    dynamic-array workbooks on open (~120s each for some 9 KB files)."""
+    for _attempt in range(3):
+        excel_truth.restart_excel()
+        if pin_manual_calc():
+            return
+    raise SystemExit("cannot pin Excel to manual calculation; aborting")
 
 
 def open_script(pairs) -> str:
