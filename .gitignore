@@ -1,0 +1,27 @@
+# corpora (fetched; see README) and download artifacts
+corpus-sb/
+corpus-fuse/
+fuse-archive/
+
+# build outputs
+harness/runners/dotnet/bin/
+harness/runners/dotnet/obj/
+harness/__pycache__/
+harness/runners/__pycache__/
+
+# regenerable per-run artifacts (the tracked receipts are the final
+# <lib>.jsonl, truth-compare/, manifests, skips, and reports)
+results*/out/
+results*/failures/
+results*/*.raw.jsonl
+results*/excel-truth/
+results*/excel-staging/
+results*/recalc-out/
+results*/rt-outputs/
+results*/save_*.xlsx
+results*/canary_*.xlsx
+
+# Excel droppings
+~$*
+**/~$*
+.DS_Store

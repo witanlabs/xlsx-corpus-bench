@@ -1,0 +1,52 @@
+{
+  "closedxml": {
+    "files": 5426,
+    "load_ok": 5399,
+    "roundtrip_ok": 5353,
+    "recalc_supported": true,
+    "recalc_files_with_formulas": 2747,
+    "recalc_clean_files": 1590,
+    "formula_cells": 952346,
+    "formula_cells_matched": 579832
+  },
+  "epplus": {
+    "files": 5426,
+    "load_ok": 5415,
+    "roundtrip_ok": 5400,
+    "recalc_supported": true,
+    "recalc_files_with_formulas": 3002,
+    "recalc_clean_files": 1876,
+    "formula_cells": 1298786,
+    "formula_cells_matched": 913881
+  },
+  "libreoffice": {
+    "files": 5426,
+    "load_ok": 5426,
+    "roundtrip_ok": 5280,
+    "recalc_supported": true,
+    "recalc_files_with_formulas": 2746,
+    "recalc_clean_files": 2350,
+    "formula_cells": 685179,
+    "formula_cells_matched": 642345
+  },
+  "openpyxl": {
+    "files": 5426,
+    "load_ok": 5426,
+    "roundtrip_ok": 5416,
+    "recalc_supported": false,
+    "recalc_files_with_formulas": 0,
+    "recalc_clean_files": 0,
+    "formula_cells": 0,
+    "formula_cells_matched": 0
+  },
+  "witan": {
+    "files": 5426,
+    "load_ok": 5426,
+    "roundtrip_ok": 5426,
+    "recalc_supported": true,
+    "recalc_files_with_formulas": 3023,
+    "recalc_clean_files": 2611,
+    "formula_cells": 1439611,
+    "formula_cells_matched": 1412282
+  }
+}

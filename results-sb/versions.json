@@ -1,0 +1,15 @@
+{
+  "witan": "xlsx-serve api/v2.49.0 (local Native AOT build)",
+  "openpyxl": "3.1.5",
+  "epplus": "7.5.3",
+  "closedxml": "0.105.0",
+  "libreoffice": "26.2.4.2",
+  "python": "3.13.7",
+  "node": "25.2.1",
+  "dotnet": "10.0.101",
+  "os": "macOS (Darwin 25.5.0, arm64)",
+  "corpora": {
+    "fuse": "FUSE (Zenodo 581678, CC-BY 4.0): 10,702 OOXML workbooks extracted from the 249,376-file Common Crawl corpus; universe 10,544 (Excel-processable)",
+    "spreadsheetbench": "SpreadsheetBench spreadsheetbench_912_v0.1.tar.gz: 5,455 unique workbooks by sha256; universe 5,426 (Excel-processable)"
+  }
+}
