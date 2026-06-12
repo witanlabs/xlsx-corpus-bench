@@ -97,7 +97,7 @@ def main() -> int:
                 "category": {
                     "title": {"text": "round-trip survival (open→save→reopen)"},
                     "numberFormat": "0%", "numberFormatLinked": False,
-                    "min": xmin, "max": 1.0, "majorUnit": 0.01, "majorGridlines": True,
+                    "min": xmin, "max": 1.005, "majorUnit": 0.01, "majorGridlines": True,
                 },
                 "value": {
                     "title": {"text": "workbooks recalculated 100% Excel-identical"},
