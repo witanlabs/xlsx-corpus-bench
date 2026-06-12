@@ -190,25 +190,29 @@ emit computed values as JSON like the .NET engines do).
   recalculation run at different times. All recalc scores are slightly
   conservative, uniformly — preferred over a dependency-closure exclusion
   readers would have to take on faith.
-- **The truth corpus itself has known imperfections** (found by triaging
-  engine mismatches by hand; a small number of files, and always in the
-  conservative direction — engines lose credit for correct results, never
-  gain it for wrong ones):
-  - a few truth files were saved by Excel with formula cells
+- **The truth corpus itself has known imperfections**, found by triaging
+  engine mismatches by hand. Every hand-verified instance amounts to, on
+  SpreadsheetBench, roughly 930 cells across 7 workbooks — about 0.08% of
+  comparable formula cells and 0.13% of files. They penalize every engine
+  equally: the defect is in the truth file, independent of any engine, and
+  it costs exactly the engines that compute the correct fresh value (all
+  of those under test). The direction is strictly conservative — engines
+  lose credit for correct results, never gain it for wrong ones. The modes:
+  - a few truth files were saved by Excel with some formula cells
     *uncalculated* (`<f ca="1">` with an empty `<v/>`); the comparator
-    reads the empty cache as a real empty-string value and counts the
+    reads the empty cache as a real empty-string result and counts the
     engine's freshly computed value as a mismatch;
-  - in a handful of cases the truth file is byte-identical to the source —
-    Excel never recalculated despite the forced `fullCalcOnLoad`, so a
-    stale source value is treated as truth;
+  - in a couple of files Excel never recalculated despite the forced
+    `fullCalcOnLoad`, so stale source values became truth;
   - Excel itself is nondeterministic around external-link bookkeeping: the
     same source cells produced `#REF!` in one truth run and kept their
     values in another, across sibling variants of one workbook.
-  A truth-staleness detector (flag truth files whose formula cells lack
-  `<v>`, or whose bytes equal the source) would tighten this; like the
-  transitive-volatile exclusion, it is left undone deliberately — every
-  added filter is something a skeptical reader must take on faith, and the
-  current error budget is small and one-directional.
+  No automated filter is applied, deliberately. The uncalculated-cell mode
+  has no reliable static signature — an empty cached string is usually a
+  legitimate formula result (about 40% of SpreadsheetBench formula cells
+  genuinely evaluate to `""`), so detection requires recomputation, and
+  every added filter is something a skeptical reader must take on faith.
+  The error budget is small and one-directional, so it stays in.
 - **Timings are not comparable across libraries** — different process
   models. This benchmark measures correctness, not speed.
 - **Corpus skew.** Forum workbooks skew modern and formula-heavy; FUSE adds
