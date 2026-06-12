@@ -90,7 +90,7 @@ def main() -> int:
             "name": f"{sheet} results",
             "position": {"from": {"cell": "E2"}, "to": {"cell": "N22"}},
             "groups": [{"type": "scatter", "scatterStyle": "marker", "series": series}],
-            "title": {"text": f"{title}\ncalculation engines — top-right is best"},
+            "title": {"text": f"{title}\nxlsx engines — top-right is best"},
             "roundedCorners": False,
             "legend": {"position": "bottom"},
             "axes": {

@@ -10,6 +10,7 @@ Recalculation is judged against real Excel: Microsoft Excel recomputed every wor
 | epplus | 5,426 | 99.8% | 99.5% | 74.6% of 2,970 | 68.0% of 1,168,856 |
 | libreoffice | 5,426 | 100.0% | 97.3% | 90.4% of 2,970 | 96.7% of 1,168,856 |
 | openpyxl | 5,426 | 100.0% | 99.8% | N/A (no calculation engine) | N/A (no calculation engine) |
+| witan | 5,426 | 100.0% | 100.0% | 95.7% of 2,967 | 99.8% of 1,163,936 |
 
 ## Top load-error signatures
 

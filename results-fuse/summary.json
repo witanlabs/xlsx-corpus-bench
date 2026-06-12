@@ -38,5 +38,15 @@
     "recalc_clean_files": 0,
     "formula_cells": 0,
     "formula_cells_matched": 0
+  },
+  "witan": {
+    "files": 10544,
+    "load_ok": 10544,
+    "roundtrip_ok": 10544,
+    "recalc_supported": true,
+    "recalc_files_with_formulas": 3584,
+    "recalc_clean_files": 3199,
+    "formula_cells": 5676712,
+    "formula_cells_matched": 5596022
   }
 }

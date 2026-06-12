@@ -19,21 +19,23 @@ on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-12 (wit
 <!-- table:results-fuse:start -->
 | library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 5,671,240) |
 |---|---|---|---|---|
-| LibreOffice | **100.0%** | 94.8% | **91.9%** | **98.9%** |
+| witan | **100.0%** | **100.0%** | **95.3%** | **99.7%** |
+| LibreOffice | 100.0% | 94.8% | 91.9% | 98.9% |
 | ClosedXML | 99.7% | 98.6% | 82.1% | 69.0% |
 | EPPlus | 98.6% | 98.6% | 62.3% | 52.2% |
-| openpyxl | 99.9% | **99.9%** | N/A — no calculation engine |  |
+| openpyxl | 99.9% | 99.9% | N/A — no calculation engine |  |
 <!-- table:results-fuse:end -->
 
 **SpreadsheetBench** — 5,426 workbooks from real Excel forum questions:
 
 <!-- table:results-sb:start -->
-| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 1,168,856) |
+| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 1,163,936) |
 |---|---|---|---|---|
-| LibreOffice | **100.0%** | 97.3% | **90.4%** | **96.7%** |
+| witan | **100.0%** | **100.0%** | **95.7%** | **99.8%** |
+| LibreOffice | **100.0%** | 97.3% | 90.4% | 96.7% |
 | EPPlus | 99.8% | 99.5% | 74.6% | 68.0% |
 | ClosedXML | 99.5% | 98.7% | 63.8% | 39.4% |
-| openpyxl | **100.0%** | **99.8%** | N/A — no calculation engine |  |
+| openpyxl | **100.0%** | 99.8% | N/A — no calculation engine |  |
 <!-- table:results-sb:end -->
 
 Full tables with denominators and per-library error signatures:
