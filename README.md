@@ -159,9 +159,7 @@ For the second corpus add `--results-dir results-fuse --corpus corpus-fuse`
 to each step. Everything is resumable (append-only JSONL keyed by sha256).
 Supporting tools: `harness/failure_report.py` (team-facing failure triage),
 `harness/recalc_gap_report.py` (witan mismatches classified by function),
-`harness/revalidate.py` (re-judge round-trips after validator changes),
-`harness/regen_outputs.py` + `harness/excel_repair_check.py`
-(Excel-reopen oracle for saved outputs — in progress).
+`harness/revalidate.py` (re-judge round-trips after validator changes).
 
 ## Adding a library
 
@@ -183,10 +181,9 @@ emit computed values as JSON like the .NET engines do).
 ## Known limitations
 
 - **Round-trip's structural validator is stricter than Excel.** Excel
-  tolerates some defects the OPC validator flags; an Excel-reopen oracle
-  (does Excel open each library's saved output cleanly?) is being added —
-  with alerts suppressed, Excel refuses files it would need to repair,
-  which makes that check binary and automatable.
+  tolerates some defects the OPC validator flags (verified by spot-checks),
+  so round-trip numbers are conservative: a library can only be punished
+  for defects, never excused.
 - **Volatile dependents stay in the comparison.** The exclusion is
   own-formula only; a cell like `=A1+30` where `A1=TODAY()` generally
   counts as a mismatch for every engine, since truth generation and engine

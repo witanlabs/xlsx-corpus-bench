@@ -139,7 +139,15 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--lib", required=True)
     ap.add_argument("--results-dir", required=True)
+    ap.add_argument(
+        "--shas-file",
+        default=None,
+        help="only check these sha256s (one per line) — targeted/sampled runs",
+    )
     args = ap.parse_args()
+    only = None
+    if args.shas_file:
+        only = {l.strip() for l in open(args.shas_file) if l.strip()}
 
     results = os.path.join(ROOT, args.results_dir)
     out_dir = os.path.join(results, "rt-outputs", args.lib)
@@ -163,7 +171,7 @@ def main() -> int:
     todo = []
     for line in open(os.path.join(results, "manifest.jsonl")):
         rec = json.loads(line)
-        if rec["sha256"] in done:
+        if rec["sha256"] in done or (only is not None and rec["sha256"] not in only):
             continue
         # universe rule: skip files Excel can't process in original form
         if os.path.isdir(truth_dir) and not os.path.exists(

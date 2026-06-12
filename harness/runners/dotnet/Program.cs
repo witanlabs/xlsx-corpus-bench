@@ -53,7 +53,6 @@ foreach (var line in File.ReadLines(manifest))
     {
         "recalc-save" => Task.Run(() => RecalcSave(lib, Path.Combine(corpus, relPath), sha, relPath)),
         "recalc-emit" => Task.Run(() => RecalcEmit(lib, Path.Combine(corpus, relPath), sha, relPath)),
-        "save-only" => Task.Run(() => SaveOnly(lib, Path.Combine(corpus, relPath), sha, relPath, ext)),
         _ => Task.Run(() => ProcessFile(lib, Path.Combine(corpus, relPath), sha, relPath, ext)),
     };
     if (task.Wait(PerFileTimeoutMs))
@@ -180,32 +179,6 @@ static string XlErrorString(XLError e) => e switch
     XLError.NumberInvalid => "#NUM!",
     _ => "#VALUE!",
 };
-
-// save-only mode: load + SaveAs to out-dir, nothing else — used to
-// regenerate round-trip outputs for the Excel-reopen oracle
-object SaveOnly(string lib, string file, string sha, string relPath, string ext)
-{
-    var outPath = Path.Combine(outDir, sha + ext);
-    try
-    {
-        if (File.Exists(outPath)) return new { sha256 = sha, path = relPath, lib, ok = true, error = (string?)null };
-        if (lib == "epplus")
-        {
-            using var pkg = new ExcelPackage(new FileInfo(file));
-            pkg.SaveAs(new FileInfo(outPath));
-        }
-        else
-        {
-            using var wb = new XLWorkbook(file);
-            wb.SaveAs(outPath);
-        }
-        return new { sha256 = sha, path = relPath, lib, ok = true, error = (string?)null };
-    }
-    catch (Exception e)
-    {
-        return new { sha256 = sha, path = relPath, lib, ok = false, error = Trim(e) };
-    }
-}
 
 object ProcessFile(string lib, string file, string sha, string relPath, string ext)
 {
