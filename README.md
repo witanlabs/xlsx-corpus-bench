@@ -121,7 +121,7 @@ FUSE uses `results-fuse/` + `corpus-fuse/`).
 
 | library | driven via |
 |---|---|
-| witan | local `xlsx-serve` engine build (`WITAN_XLSX_SERVE`); `exec` for load/reload, JSON-RPC `open`+`save` for round-trip, `calc` for recalculation |
+| witan | public [`witan` CLI](https://www.npmjs.com/package/witan) by default (`npm i -g witan`; run `witan auth login` first — anonymous traffic is rate-limited at corpus scale); `exec` for load/reload, `xlsx rpc` save for round-trip, `calc` for recalculation. Set `WITAN_XLSX_SERVE` to a local engine build to run offline |
 | [openpyxl](https://openpyxl.readthedocs.io/) | Python API; no calculation engine → recalc N/A |
 | [EPPlus](https://github.com/EPPlusSoftware/EPPlus) | .NET API; `Workbook.Calculate()`, computed values emitted as JSON for the shared comparator (NonCommercial license context) |
 | [ClosedXML](https://github.com/ClosedXML/ClosedXML) | .NET API; `RecalculateAllFormulas()`, computed values emitted as JSON |
@@ -140,7 +140,7 @@ it; the runner protocol below makes that mechanical once cleared.
 pip install openpyxl
 dotnet build -c Release harness/runners/dotnet
 brew install --cask libreoffice          # macOS
-# witan: build xlsx-serve and export WITAN_XLSX_SERVE=/path/to/xlsx-serve
+npm install -g witan && witan auth login    # or: export WITAN_XLSX_SERVE=/path/to/local/engine
 
 # 1. corpus + manifest (idempotent; fixes the file set)
 python3 harness/fetch_corpus.py spreadsheetbench

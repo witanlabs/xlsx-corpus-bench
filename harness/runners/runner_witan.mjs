@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-// witan runner — drives the locally built xlsx-serve binary
-// (../witan-alfred/bin/publish/xlsx-serve, override with WITAN_XLSX_SERVE).
+// witan runner — drives the public `witan` CLI (npm i -g witan) by default;
+// set WITAN_XLSX_SERVE to a local engine build to run offline (no rate
+// limits; what the published numbers use). Public-CLI corpus runs need
+// authentication first (`witan auth login`) — anonymous traffic is
+// rate-limited at corpus scale.
 //
 // Per file, measures:
 //   load      — `exec <file> --expr 'await xlsx.listSheets(wb)'`
@@ -16,24 +19,27 @@
 import { execFile } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
 
 const PER_OP_TIMEOUT_MS = 120_000;
-const CONCURRENCY = Number(process.env.WITAN_BENCH_CONCURRENCY || 8);
+// public CLI goes over the network: default to gentler parallelism there
+const CONCURRENCY = Number(
+  process.env.WITAN_BENCH_CONCURRENCY || (process.env.WITAN_XLSX_SERVE ? 8 : 2),
+);
 
 const args = Object.fromEntries(
   process.argv.slice(2).map((a, i, all) => (a.startsWith('--') ? [a.slice(2), all[i + 1]] : null)).filter(Boolean),
 );
 const { corpus, manifest, out, 'out-dir': outDir } = args;
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const xlsxServe =
-  process.env.WITAN_XLSX_SERVE || path.resolve(repoRoot, '..', 'witan-alfred', 'bin', 'publish', 'xlsx-serve');
-
-if (!fs.existsSync(xlsxServe)) {
-  console.error(`xlsx-serve binary not found at ${xlsxServe}`);
+// default: the public `witan` CLI (npm i -g witan). WITAN_XLSX_SERVE points
+// at a local engine build instead (no network, no rate limits).
+const localEngine = process.env.WITAN_XLSX_SERVE || null;
+if (localEngine && !fs.existsSync(localEngine)) {
+  console.error(`WITAN_XLSX_SERVE set but not found: ${localEngine}`);
   process.exit(1);
 }
+const BIN = localEngine || 'witan';
+const SUB = localEngine ? [] : ['xlsx']; // public CLI namespaces under `xlsx`
 fs.mkdirSync(outDir, { recursive: true });
 
 // run xlsx-serve, returning {ok, json, error}; non-zero exit with parseable
@@ -41,8 +47,8 @@ fs.mkdirSync(outDir, { recursive: true });
 function run(cliArgs) {
   return new Promise((resolve) => {
     execFile(
-      xlsxServe,
-      cliArgs,
+      BIN,
+      [...SUB, ...cliArgs],
       { timeout: PER_OP_TIMEOUT_MS, maxBuffer: 256 * 1024 * 1024 },
       (err, stdout, stderr) => {
         try {
@@ -59,19 +65,21 @@ function run(cliArgs) {
 }
 
 async function listSheets(file) {
-  const r = await run(['--json', 'exec', file, '--expr', 'await xlsx.listSheets(wb)']);
+  const r = await run(['exec', file, '--expr', 'await xlsx.listSheets(wb)', '--json']);
   if (!r.ok) return { ok: false, error: r.error };
   if (r.json.ok === false) return { ok: false, error: (r.json.error?.message ?? 'exec failed').slice(0, 500) };
   return { ok: true, error: null };
 }
 
-// save-only rewrite via the JSON-RPC server mode: open + save, one response
-// line per request, every line must be ok
+// save-only rewrite via the JSON-RPC server mode: every response line must
+// be ok. Local engine: bare server, requests carry a workbook field.
+// Public CLI: `witan xlsx rpc <file>` owns the session — no workbook field,
+// no explicit open.
 function rpcOpenSave(file) {
   return new Promise((resolve) => {
     const proc = execFile(
-      xlsxServe,
-      [],
+      BIN,
+      localEngine ? [] : ['xlsx', 'rpc', file],
       { timeout: PER_OP_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 },
       (err, stdout, stderr) => {
         const responses = String(stdout ?? '')
@@ -85,7 +93,8 @@ function rpcOpenSave(file) {
             }
           })
           .filter(Boolean);
-        if (responses.length >= 2 && responses.every((r) => r.ok)) {
+        const expected = localEngine ? 2 : 1;
+        if (responses.length >= expected && responses.every((r) => r.ok)) {
           resolve({ ok: true, error: null });
         } else {
           const bad = responses.find((r) => !r.ok);
@@ -96,12 +105,13 @@ function rpcOpenSave(file) {
         }
       },
     );
-    proc.stdin.write(
-      JSON.stringify({ id: '1', workbook: file, op: 'open', args: {} }) +
-        '\n' +
-        JSON.stringify({ id: '2', workbook: file, op: 'save', args: {} }) +
-        '\n',
-    );
+    const requests = localEngine
+      ? [
+          { id: '1', workbook: file, op: 'open', args: {} },
+          { id: '2', workbook: file, op: 'save', args: {} },
+        ]
+      : [{ id: '1', op: 'save', args: {} }];
+    proc.stdin.write(requests.map((r) => JSON.stringify(r)).join('\n') + '\n');
     proc.stdin.end();
   });
 }
@@ -134,7 +144,7 @@ async function processFile(rec) {
   }
 
   t0 = Date.now();
-  const verify = await run(['--json', 'calc', file, '--verify']);
+  const verify = await run(['calc', file, '--verify', '--json']);
   if (verify.ok && verify.json.touched !== undefined) {
     result.recalc = {
       supported: true,

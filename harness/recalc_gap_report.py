@@ -25,9 +25,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cached_values import VOLATILE, extract, values_match  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-XLSX_SERVE = os.environ.get(
-    "WITAN_XLSX_SERVE", os.path.join(ROOT, "..", "witan-alfred", "bin", "publish", "xlsx-serve")
-)
+_local = os.environ.get("WITAN_XLSX_SERVE")
+WITAN_CALC = [_local, "calc"] if _local else ["witan", "xlsx", "calc"]
 FN_RE = re.compile(r"(?:_xlfn\.)?([A-Z][A-Z0-9.]{2,})\s*\(")
 
 
@@ -79,7 +78,7 @@ def main() -> int:
             work = os.path.join(tmp, "wb" + rec["ext"])
             shutil.copy(os.path.join(ROOT, corpus_dir, rec["path"]), work)
             try:
-                subprocess.run([XLSX_SERVE, "--json", "calc", work], capture_output=True, timeout=120)
+                subprocess.run(WITAN_CALC + [work, "--json"], capture_output=True, timeout=120)
                 truth = extract(truth_path, with_formula=True)
                 engine = extract(work)
             except Exception as e:

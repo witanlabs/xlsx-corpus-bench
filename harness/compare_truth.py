@@ -37,9 +37,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "run
 from cached_values import compare_to_truth, extract  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-XLSX_SERVE = os.environ.get(
-    "WITAN_XLSX_SERVE", os.path.join(ROOT, "..", "witan-alfred", "bin", "publish", "xlsx-serve")
-)
+# public CLI by default; WITAN_XLSX_SERVE selects a local engine build
+_local = os.environ.get("WITAN_XLSX_SERVE")
+WITAN_CALC = [_local, "calc"] if _local else ["witan", "xlsx", "calc"]
 DOTNET_RUNNER = os.path.join(ROOT, "harness/runners/dotnet/bin/Release/net10.0/DotnetRunner")
 PER_FILE_TIMEOUT_S = 120
 
@@ -52,7 +52,7 @@ def witan_recalc(records, recalc_dir):
         shutil.copy(os.path.join(CORPUS, rec["path"]), out)
         try:
             subprocess.run(
-                [XLSX_SERVE, "--json", "calc", out],
+                WITAN_CALC + [out, "--json"],
                 capture_output=True,
                 timeout=PER_FILE_TIMEOUT_S,
             )
