@@ -16,23 +16,25 @@ on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-12 (wit
 
 **FUSE** — 10,544 workbooks crawled from the open web:
 
-| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel |
+<!-- table:results-fuse:start -->
+| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 5,671,240) |
 |---|---|---|---|---|
-| witan | **100.0%** | **100.0%** | **95.0%** | **99.5%** of 5,671,240 |
-| LibreOffice | 100.0% | 94.8% | 91.9% | 98.9% |
+| LibreOffice | **100.0%** | 94.8% | **91.9%** | **98.9%** |
 | ClosedXML | 99.7% | 98.6% | 82.1% | 69.0% |
 | EPPlus | 98.6% | 98.6% | 62.3% | 52.2% |
-| openpyxl | 99.9% | 99.9% | N/A — no calculation engine | |
+| openpyxl | 99.9% | **99.9%** | N/A — no calculation engine |  |
+<!-- table:results-fuse:end -->
 
 **SpreadsheetBench** — 5,426 workbooks from real Excel forum questions:
 
-| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel |
+<!-- table:results-sb:start -->
+| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 1,168,856) |
 |---|---|---|---|---|
-| witan | **100.0%** | **100.0%** | **94.8%** | **99.8%** of 1,168,856 |
-| LibreOffice | 100.0% | 97.3% | 90.4% | 96.7% |
+| LibreOffice | **100.0%** | 97.3% | **90.4%** | **96.7%** |
 | EPPlus | 99.8% | 99.5% | 74.6% | 68.0% |
 | ClosedXML | 99.5% | 98.7% | 63.8% | 39.4% |
-| openpyxl | 100.0% | 99.8% | N/A — no calculation engine | |
+| openpyxl | **100.0%** | **99.8%** | N/A — no calculation engine |  |
+<!-- table:results-sb:end -->
 
 Full tables with denominators and per-library error signatures:
 [results-sb/REPORT.md](results-sb/REPORT.md) and
@@ -94,9 +96,12 @@ spreadsheets extracted from Common Crawl by Barik et al. (MSR 2015), of
 which **10,702 are OOXML workbooks** (detected by content — zip magic +
 `xl/workbook.xml`; FUSE stores bare sha1 names); 10,544 form the universe.
 The rest are mostly pre-2007 OLE `.xls`, skipped with counts logged by
-[harness/fuse_extract.py](harness/fuse_extract.py). Fetch `fuse.zip` from
-Zenodo, unzip the 140-part `FUSE.7z.*`, extract with
-`7zz e FUSE.7z.001 fuse-cc-binaries.tar.gz`, then run `fuse_extract.py`.
+[harness/fuse_extract.py](harness/fuse_extract.py).
+
+```bash
+brew install sevenzip                              # 7zz, for the solid 7z inside fuse.zip
+python3 harness/fetch_corpus.py fuse               # 9.4 GB download, ~25 GB free needed
+```
 
 **SpreadsheetBench**
 ([RUCKBReasoning/SpreadsheetBench](https://github.com/RUCKBReasoning/SpreadsheetBench)):
@@ -104,9 +109,7 @@ workbooks from real Excel forum questions. 5,455 unique by sha256; 5,426
 form the universe (29 files Excel cannot process).
 
 ```bash
-mkdir -p corpus-sb && cd corpus-sb
-curl -sLO https://raw.githubusercontent.com/RUCKBReasoning/SpreadsheetBench/main/data/spreadsheetbench_912_v0.1.tar.gz
-tar -xzf spreadsheetbench_912_v0.1.tar.gz && rm spreadsheetbench_912_v0.1.tar.gz
+python3 harness/fetch_corpus.py spreadsheetbench   # ~100 MB
 ```
 
 The harness is corpus-agnostic: point `harness/manifest.py` at any
@@ -139,8 +142,8 @@ dotnet build -c Release harness/runners/dotnet
 brew install --cask libreoffice          # macOS
 # witan: build xlsx-serve and export WITAN_XLSX_SERVE=/path/to/xlsx-serve
 
-# 1. manifest (fixes the corpus)
-python3 harness/manifest.py --corpus corpus-sb --out results-sb/manifest.jsonl
+# 1. corpus + manifest (idempotent; fixes the file set)
+python3 harness/fetch_corpus.py spreadsheetbench
 
 # 2. per-library benchmark runs (load / round-trip), resumable
 python3 harness/run.py --lib openpyxl    # repeat for witan epplus closedxml libreoffice

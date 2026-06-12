@@ -151,8 +151,66 @@ def main() -> int:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(RESULTS, "summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
+    sync_readme(summary, truth)
     print("\n".join(lines))
     return 0
+
+
+DISPLAY = {"witan": "witan", "openpyxl": "openpyxl", "epplus": "EPPlus",
+           "closedxml": "ClosedXML", "libreoffice": "LibreOffice"}
+
+
+def sync_readme(summary: dict, truth: dict) -> None:
+    """Rewrite this corpus's results table in README.md between marker
+    comments, so the README can never drift from the receipts. The best
+    value per column is bolded — by rule, not editorial choice."""
+    readme = os.path.join(ROOT, "README.md")
+    tag = os.path.basename(RESULTS)
+    start, end = f"<!-- table:{tag}:start -->", f"<!-- table:{tag}:end -->"
+    if not os.path.exists(readme):
+        return
+    text = open(readme).read()
+    if start not in text or end not in text:
+        return
+
+    rows = []
+    for lib, s in summary.items():
+        n = s["files"]
+        t = truth.get(lib)
+        rows.append({
+            "lib": DISPLAY.get(lib, lib),
+            "load": s["load_ok"] / n if n else 0.0,
+            "rt": s["roundtrip_ok"] / n if n else 0.0,
+            "clean": (t["clean"] / t["files"]) if t else None,
+            "cells": (t["matched"] / t["cells"]) if t else None,
+            "supported": s["recalc_supported"],
+        })
+    rows.sort(key=lambda r: (r["cells"] is None, -(r["cells"] or 0), -r["rt"]))
+    best = {
+        k: max((r[k] for r in rows if r[k] is not None), default=None)
+        for k in ("load", "rt", "clean", "cells")
+    }
+
+    def cell(r, k):
+        if r[k] is None:
+            return "N/A — no calculation engine" if k == "clean" else ""
+        v = f"{100 * r[k]:.1f}%"
+        return f"**{v}**" if r[k] == best[k] else v
+
+    denom = next((f"{t['cells']:,}" for t in truth.values()), "?")
+    table = [
+        f"| library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of {denom}) |",
+        "|---|---|---|---|---|",
+    ]
+    for r in rows:
+        table.append(
+            f"| {r['lib']} | {cell(r, 'load')} | {cell(r, 'rt')} | {cell(r, 'clean')} | {cell(r, 'cells')} |"
+        )
+    block = start + "\n" + "\n".join(table) + "\n" + end
+    pre, rest = text.split(start, 1)
+    _, post = rest.split(end, 1)
+    with open(readme, "w") as f:
+        f.write(pre + block + post)
 
 
 if __name__ == "__main__":
