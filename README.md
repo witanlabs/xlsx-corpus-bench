@@ -16,6 +16,8 @@ on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-12 (wit
 
 **FUSE** — 10,544 workbooks crawled from the open web:
 
+![FUSE: round-trip survival vs Excel-identical recalculation, per xlsx engine](charts/fuse.png)
+
 <!-- table:results-fuse:start -->
 | library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 5,671,240) |
 |---|---|---|---|---|
@@ -27,6 +29,8 @@ on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-12 (wit
 <!-- table:results-fuse:end -->
 
 **SpreadsheetBench** — 5,426 workbooks from real Excel forum questions:
+
+![SpreadsheetBench: round-trip survival vs Excel-identical recalculation, per xlsx engine](charts/sb.png)
 
 <!-- table:results-sb:start -->
 | library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel (of 1,163,936) |
@@ -42,6 +46,7 @@ Full tables with denominators and per-library error signatures:
 [results-sb/REPORT.md](results-sb/REPORT.md) and
 [results-fuse/REPORT.md](results-fuse/REPORT.md). Per-file receipts:
 `results*/<lib>.jsonl` and `results*/truth-compare/<lib>.jsonl`.
+The charts are authored and rendered by witan itself ([harness/make_charts.py](harness/make_charts.py)).
 
 ## What is measured
 
