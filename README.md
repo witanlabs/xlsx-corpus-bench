@@ -11,14 +11,14 @@ judgment calls, no blended scores.
 Two complementary public corpora — **15,970 real-world workbooks, 6.8M
 formula cells** — bracketing the space: FUSE is the open web (old, hostile,
 every producer imaginable), SpreadsheetBench is what people actually work
-on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-11
+on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-12 (witan); 2026-06-11 (others)
 (library versions in [results-sb/versions.json](results-sb/versions.json)).
 
 **FUSE** — 10,544 workbooks crawled from the open web:
 
 | library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel |
 |---|---|---|---|---|
-| witan | **100.0%** | **100.0%** | **94.9%** | **99.5%** of 5,671,240 |
+| witan | **100.0%** | **100.0%** | **95.0%** | **99.5%** of 5,671,240 |
 | LibreOffice | 100.0% | 94.8% | 91.9% | 98.9% |
 | ClosedXML | 99.7% | 98.6% | 82.1% | 69.0% |
 | EPPlus | 98.6% | 98.6% | 62.3% | 52.2% |
@@ -28,7 +28,7 @@ on today (modern, formula-heavy forum workbooks). Last full run: 2026-06-11
 
 | library | opens without error | survives open→save→reopen | workbooks recalculated 100% Excel-identical | formula cells matching Excel |
 |---|---|---|---|---|
-| witan | **100.0%** | **100.0%** | **92.1%** | **99.1%** of 1,168,856 |
+| witan | **100.0%** | **100.0%** | **94.8%** | **99.8%** of 1,168,856 |
 | LibreOffice | 100.0% | 97.3% | 90.4% | 96.7% |
 | EPPlus | 99.8% | 99.5% | 74.6% | 68.0% |
 | ClosedXML | 99.5% | 98.7% | 63.8% | 39.4% |

@@ -25,3 +25,4 @@ results*/canary_*.xlsx
 ~$*
 **/~$*
 .DS_Store
+engine-frozen/

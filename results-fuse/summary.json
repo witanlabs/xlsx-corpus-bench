@@ -45,8 +45,8 @@
     "roundtrip_ok": 10544,
     "recalc_supported": true,
     "recalc_files_with_formulas": 3585,
-    "recalc_clean_files": 3185,
+    "recalc_clean_files": 3189,
     "formula_cells": 5680904,
-    "formula_cells_matched": 5585959
+    "formula_cells_matched": 5585901
   }
 }

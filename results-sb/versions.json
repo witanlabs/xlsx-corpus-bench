@@ -1,5 +1,5 @@
 {
-  "witan": "xlsx-serve api/v2.49.0 (local Native AOT build)",
+  "witan": "xlsx-serve api/v2.49.0 + recalc parity fixes (frozen build, rev 485457f19)",
   "openpyxl": "3.1.5",
   "epplus": "7.5.3",
   "closedxml": "0.105.0",
