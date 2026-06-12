@@ -1,5 +1,5 @@
 {
-  "witan": "xlsx-serve api/v2.50.0 (frozen build, rev 04a597101)",
+  "witan": "xlsx-serve api/v2.49.0",
   "openpyxl": "3.1.5",
   "epplus": "7.5.3",
   "closedxml": "0.105.0",
